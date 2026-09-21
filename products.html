@@ -646,9 +646,16 @@
        PRODUCTS JAVASCRIPT
        Keep products.js in the same GitHub folder.
   ========================================================== -->
-<script src="products-name.js"></script>
-<script src="price.js"></script>
-<script src="image-links.js"></script>
+<!-- Supabase client (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Supabase config -->
+<script src="supabase-config.js"></script>
+
+<!-- Live products loader (fetches from Supabase) -->
+<script src="products-live.js"></script>
+
+<!-- Existing scripts -->
 <script src="cart-common.js"></script>
 <script src="products-grid.js"></script>
 <script src="sound.js"></script>
