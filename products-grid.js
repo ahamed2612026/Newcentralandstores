@@ -1,3 +1,8 @@
+/* ============================================================
+   CENTRAL & STORES — Product Grid
+   Reads live products from window.productsData (Supabase)
+   ============================================================ */
+
 document.addEventListener("DOMContentLoaded", () => {
   const productsGrid = document.getElementById("productsGrid");
   const productCount = document.getElementById("productCount");
@@ -7,18 +12,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // productsData not loaded na page crash aagama iruka
-  if (typeof productsData === "undefined" || !Array.isArray(productsData)) {
-    console.log("productsData missing. Check products-data.js file.");
-    productsGrid.innerHTML = `
-      <div class="products-empty-state show">
-        <div class="empty-icon">!</div>
-        <h3>Products loading issue</h3>
-        <p>products-data.js file load aagala.</p>
-      </div>
-    `;
-    if (productCount) productCount.textContent = "0 PRODUCTS";
-    return;
+  // If productsData isn't ready yet, wait for the event
+  if (typeof window.productsData === "undefined" || !Array.isArray(window.productsData)) {
+    window.productsData = [];
   }
 
   function renderProducts(items) {
@@ -37,17 +33,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     items.forEach((product) => {
-  const price = productPrices[product.id] ?? 0;
+      const price = product.price ?? 0;
 
       productsGrid.innerHTML += `
         <article class="product-card" id="product-${product.id}">
           <div class="product-image-wrap">
-  ${
-    typeof productImages !== "undefined" && productImages[product.id]
-      ? `<img src="${productImages[product.id]}" alt="${product.name}" loading="lazy">`
-      : `<div class="product-image-placeholder"><span>NO IMAGE</span></div>`
-  }
-</div>
+            ${
+              product.image
+                ? `<img src="${product.image}" alt="${product.name}" loading="lazy">`
+                : `<div class="product-image-placeholder"><span>NO IMAGE</span></div>`
+            }
 
             <button
               class="product-wishlist-btn"
@@ -82,60 +77,69 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-const visibleProducts = productsData.filter(product => product.id <= 100);
-renderProducts(visibleProducts);
-const categoryButtons = document.querySelectorAll(".category-pill");
+  // Initial render (empty until Supabase responds)
+  renderProducts(window.productsData);
 
-categoryButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    const selectedCategory = button.dataset.category;
+  // When Supabase finishes loading, re-render with real data
+  document.addEventListener('productsLoaded', () => {
+    const fresh = window.productsData.slice();
+    renderProducts(fresh);
 
-    // Active button change
-    categoryButtons.forEach((btn) => btn.classList.remove("active"));
-    button.classList.add("active");
-
-    // Filter products
-    if (selectedCategory === "All") {
-    renderProducts(visibleProducts);
-} else {
-    const filteredProducts = visibleProducts.filter((product) => {
-        return product.category === selectedCategory;
-    });
-
-    renderProducts(filteredProducts);
-    }
+    // Reset category pill to "All"
+    document.querySelectorAll('.category-pill').forEach(b => b.classList.remove('active'));
+    const allBtn = document.querySelector('.category-pill[data-category="All"]');
+    if (allBtn) allBtn.classList.add('active');
   });
-});
+
+  // Category filter
+  const categoryButtons = document.querySelectorAll(".category-pill");
+
+  categoryButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const selectedCategory = button.dataset.category;
+
+      categoryButtons.forEach((btn) => btn.classList.remove("active"));
+      button.classList.add("active");
+
+      const all = window.productsData.slice();
+
+      if (selectedCategory === "All") {
+        renderProducts(all);
+      } else {
+        const filtered = all.filter((product) => product.category === selectedCategory);
+        renderProducts(filtered);
+      }
+    });
+  });
+
+  // Add to cart
   document.addEventListener("click", (event) => {
     const button = event.target.closest(".add-cart-btn");
-
     if (!button) return;
 
     const id = button.dataset.id;
 
-    const product = productsData.find(
+    const product = window.productsData.find(
       (item) => String(item.id) === String(id)
     );
 
     if (!product) return;
-const price = productPrices?.[product.id] ?? 0;
-const image =
-  typeof productImages !== "undefined"
-    ? (productImages[product.id] || "")
-    : "";
 
-if (typeof addProductToCart === "function") {
-  addProductToCart({
-    id: product.id,
-    name: product.name,
-    category: product.category,
-    weight: product.weight,
-    price: price,
-    image: image
-  });
-} else {
-  console.error("cart-common.js not loaded");
-}
+    const price = product.price ?? 0;
+    const image = product.image || "";
+
+    if (typeof addProductToCart === "function") {
+      addProductToCart({
+        id: product.id,
+        name: product.name,
+        category: product.category,
+        weight: product.weight,
+        price: price,
+        image: image
+      });
+    } else {
+      console.error("cart-common.js not loaded");
+    }
 
     const oldText = button.innerHTML;
 
