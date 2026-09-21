@@ -108,7 +108,7 @@ const productsData = [
   { id: 98, name: "Baby Wipes", category: "Baby Care", weight: "72 wipes" },
   { id: 99, name: "Baby Lotion", category: "Baby Care", weight: "200 ml" },
   { id: 100, name: "Baby Shampoo", category: "Baby Care", weight: "200 ml" },
-  { id: 101,name: "sam, soap  "Rice & Flours", weight: "1 kg" },
+  
 
   { id: 101, name: "Britannia Good Day Cashew", category: "Biscuits", weight: "200 g" },
   { id: 102, name: "Britannia Marie Gold", category: "Biscuits", weight: "250 g" },
