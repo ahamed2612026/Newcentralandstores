@@ -6,17 +6,29 @@
 (function () {
   'use strict';
 
-  /* ---------- SUPABASE (same project as admin, own storage key) ---------- */
   const SUPABASE_URL  = 'https://xcdzozyhvkonvesqvxbp.supabase.co';
   const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjZHpvenlodmtvbnZlc3F2eGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5MDIwMTYsImV4cCI6MjEwNTQ3ODAxNn0.mX0u55mSR14FGr8Lt6ofENfaOqH6JcGp4ACjKnC3gKA';
 
-  const REVIEWS_CLIENT = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      storageKey: 'cs_public_reviews'
+  function initReviews() {
+    if (!window.supabase || !window.supabase.createClient) {
+      console.warn('[reviews] Supabase SDK not loaded yet. Retrying...');
+      return setTimeout(initReviews, 150);
     }
-  });
+    runReviews(window.supabase);
+  }
+
+  function runReviews(supabaseLib) {
+    const REVIEWS_CLIENT = supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON, {
+      auth: { persistSession: false, autoRefreshToken: false, storageKey: 'cs_public_reviews' }
+    });
+
+    // ---- the rest of your code stays EXACTLY the same, just
+    //      move the DOM REFS + everything else in here
+    ...
+  }
+
+  initReviews();
+})();
 
   /* ---------- DOM REFS ---------- */
   const summaryEl    = document.getElementById('reviewsSummary');
